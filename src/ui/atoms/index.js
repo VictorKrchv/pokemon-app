@@ -1,0 +1,8 @@
+export {Button} from "./button"
+export {Input} from "./input"
+export {H2, H3, H4, H5} from "./heading"
+export {Preloader} from "./preloader"
+export {Link} from "./Link"
+export {Row} from "./row"
+export {Col} from "./col"
+export {PokemonImg} from "./pokemonImg"
