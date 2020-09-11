@@ -1,7 +1,4 @@
-import {
-  $searchValue,
-  valueChanged,
-} from "../../features/header";
+import { $searchValue, valueChanged } from "../../features/header";
 
 import {
   createStore,
@@ -15,7 +12,15 @@ import { pokemonsApi } from "../../api/pokemons";
 export const $pageParams = createStoreObject({
   offset: 0,
   count: 25,
-  currentPage: 1,
+});
+
+const $currentPages = createStoreObject({
+  onFilter: null,
+  withoutFilter: 1,
+});
+
+export const $currentPage = $currentPages.map((pages) => {
+  return pages.onFilter || pages.withoutFilter;
 });
 
 export const $pokemonList = createStore([]);
@@ -26,13 +31,13 @@ export const loadPokemonListData = createEffect({
   },
 });
 
-export const loadPokemonList = createEvent()
+export const loadPokemonList = createEvent();
 loadPokemonList.watch(() => {
   if ($pokemonList.getState().length) {
-    return 
+    return;
   }
-  return loadPokemonListData()
-})
+  return loadPokemonListData();
+});
 
 $pokemonList.on(loadPokemonListData.doneData, (_, res) =>
   res.data.results.map((item) => {
@@ -55,10 +60,11 @@ const $filteredList = combine(
 const $totalCount = $filteredList.map((list) => list.length);
 
 export const $pokemonListToShow = combine(
+  $currentPage,
   $filteredList,
   $pageParams,
-  (list, params) => {
-    const startFrom = params.currentPage * params.count - params.count;
+  (currentPage, list, params) => {
+    const startFrom = currentPage * params.count - params.count;
     return list.slice(startFrom, startFrom + params.count);
   }
 );
@@ -71,13 +77,18 @@ export const $totalPages = combine(
 
 export const PageChanged = createEvent();
 
-$pageParams.on(PageChanged, (state, page) => {
-  return { ...state, currentPage: page };
+$currentPages.on(PageChanged, (state, page) => {
+  if (state.onFilter) return { ...state, onFilter: page };
+  return { ...state, withoutFilter: page };
 });
 
-$pageParams.on(valueChanged, (state) => {
-  return { ...state, currentPage: 1 };
+$currentPages.on(valueChanged, (state, e) => {
+  const value = e.target.value;
+  if (!value) {
+    return { ...state, onFilter: null };
+  }
+  return { ...state, onFilter: 1 };
 });
 
-export const pageUnmounted = createEvent()
-$pageParams.reset(pageUnmounted)
+export const pageUnmounted = createEvent();
+$pageParams.reset(pageUnmounted);

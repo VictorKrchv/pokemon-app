@@ -5,7 +5,7 @@ import {
   $totalPages,
   PageChanged,
   $pokemonListToShow,
-  $pageParams,
+  $currentPage,
   pageUnmounted
 } from "./model";
 import { useStore } from "effector-react";
@@ -18,7 +18,7 @@ export const HomePage = () => {
     return pageUnmounted()
   }, []);
 
-  const {currentPage} = useStore($pageParams)
+  const currentPage = useStore($currentPage)
   const totalPages = useStore($totalPages);
   const loading = useStore(loadPokemonListData.pending);
   const pokemonList = useStore($pokemonListToShow);
